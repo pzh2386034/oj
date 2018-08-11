@@ -8,6 +8,7 @@ using namespace std;
  * @brief:
  * @author: pzh2467908@163.com
 question: 找出空缺数组中所有可能填法；要求数据不能重复，顺序队的数量为k
+https://www.nowcoder.com/practice/b698e67a2f5b450a824527e82ed7495d?tpId=85&tqId=29837&tPage=1&rp=1&ru=%2Fta%2F2017test&qru=%2Fta%2F2017test%2Fquestion-ranking
 ques slove idea: 广义优先搜索
 1. 输入数据作为起始点，压入队列
 2. 循环队列，如果搜索到数据中有0，则展开填充所有可能数据

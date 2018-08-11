@@ -1,149 +1,83 @@
 #include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <iostream>
-#include <queue>
+#include <stdlib.h>
+#include <stdio.h>
+#include <algorithm>
+#include <vector>
 
 using namespace std;
-
-int rows;
-int cols;
-int walk_num;
-
-typedef struct mappoints
-{
-  int x;
-  int y;
-  bool reached;//if reached
-  bool flag;//if this point can be reached
-  int min_walk;
-}MAPPOINTS;
-
-typedef struct walks
-{
-  int x;
-  int y;
-}WALKS;
-queue<MAPPOINTS> need_to_walk;
-MAPPOINTS * points  = NULL;
-WALKS *walks= NULL;
-void print_point(int x, int y)
-{
-  MAPPOINTS temp = points[x*cols + y];
-  cout<<"x: "<< temp.x<<"  y: "<< " min walk: "<< temp.min_walk<<temp.y<<" can be walk: "<<temp.flag<< " reached:"<<temp.reached<<endl;
-}
-void print_all()
-{
-  int i , j;
-for (i = 0; i< cols ; i++)
-  {
-    for(j = 0; j < rows; j++)
-      print_point(i,j);
-  }
-}
-void deal_points_around(int x, int y)
-{
-  int i;
-  int next_x, next_y;
-  MAPPOINTS now = points[x * cols + y];
-  for (i = 0; i< walk_num; i++ )
-    {
-      next_x = walks[i].x + x;
-      next_y = walks[i].y + y;
-      if (next_y>= 0 && next_x >= 0 && next_x<rows && next_y<cols &&
-          points[next_x* cols + next_y].flag &&
-          !points[next_x* cols + next_y].reached &&
-          points[next_x*cols + next_y].min_walk == 1)
-        {
-          points[next_x* cols + next_y].min_walk = now.min_walk + 1;
-          need_to_walk.push(points[next_x* cols + next_y]);
-        }
-    }
-}
-void walk_all_point()
-{
-  while(!need_to_walk.empty())
-    {
-      MAPPOINTS temp = need_to_walk.front();
-      need_to_walk.pop();
-
-      deal_points_around(temp.x, temp.y);
-      points[temp.x * cols + temp.y].reached = true;
-    }
-}
-int get_max_step()
-{
-  int i ,maxstep = 0;
-  for (i = 0; i <cols * rows; i ++)
-    {
-      if (points[i].min_walk == -1 && points[i].flag == true)
-        return -1;
-    }
-  for (i = 0; i< rows * cols; i ++)
-    {
-      if (maxstep < points[i].min_walk && points[i].flag == true)
-        {
-          maxstep = points[i].min_walk;
-        }
-    }
-  return maxstep;
-}
+/***********************************************
+ * @brief:合唱团
+ * @author: pzh2467908@163.com
+question: n个学生站成一排，从中顺序取k个，要求相邻两个的位置编号不超过d，使k个学生能力值乘积最大
+https://www.nowcoder.com/practice/661c49118ca241909add3a11c96408c8?tpId=85&tqId=29830&rp=1&ru=%2Fta%2F2017test&qru=%2Fta%2F2017test%2Fquestion-ranking&tPage=1
+ques slove idea:动态规划，首先要总结状态转移函数;可以看作
+1. 先从n个学生中选择最后一个i
+2. 由于是顺序选，然后在前i-1个里面选择k-1个；
+maxval[i][j] = max(maxval[k][j-1] * score[i], minval[k][j-1] *score[i], k=0,1,..,i-1)
+* @date: <2018-08-11>
+***********************************************/
+long long check_max();
+vector<int> score, score_used;
+int kstu , dist = 0;
+int nums = 0;
+long long maxval[50][50];
+long long minval[50][50];
 int main()
 {
-  string in_str;
-  int max_step = 0;
-  int i, j;
-  cin>>in_str;
-  rows = atoi(in_str.c_str());
-  cin>>in_str;
-  cols = atoi(in_str.c_str());
-  points = new MAPPOINTS[rows*cols];
-  memset(points,0,sizeof(MAPPOINTS)* rows * cols);
-  MAPPOINTS *begin = new MAPPOINTS;
-  for (i = 0; i< rows; i++)
+  string input_str;
+  long long final = 0;
+  cin>>input_str;
+  nums = atoi(input_str.c_str());
+  int i = 0;
+  for (i = 0; i< nums; i ++)
     {
-      cin>>in_str;
-      for (j = 0; j< cols; j++)
+      cin>>input_str;
+      score.push_back(atoi(input_str.c_str()));
+    }
+  cin>>input_str;
+  kstu = atoi(input_str.c_str());
+  cin>>input_str;
+  dist = atoi(input_str.c_str());
+
+  final =  check_max();
+  cout<<final<<endl;
+  return 0;
+}
+/*********************************************
+ * @brief: 计算maxval[i][j](第i个学生为最后一个，共j+1个学生)，minval[i][j]
+为了使j从0开始，j表示共有j+1个学生，即maxval[i][j]:第i个学生为最后一个，共j+1个学生
+ * @param:none
+ * @return:最大乘积
+ * @create: pzh2467908@163.com
+ * @date: <2018-08-11>
+ **********************************************/
+long long check_max()
+{
+  int i = 0;
+  int j = 0;
+  int k = 0;
+  long long max_value = 0;
+  for (i = 0; i < nums; i ++)
+    {
+      maxval[i][0] = minval[i][0] = score[i];
+    }
+  for(i = 0; i < nums; i++)
+    {
+      for (j = 1; j < kstu; j++)
         {
-          if (in_str.c_str()[j] == '.')
+          /* 由于是按顺序选学生，只要从i往前找即可 date:<2018-08-12>*/
+          for(k = i - 1; i - k <= dist && k >=0; k --)
             {
-              points[i*cols +j].x = i;
-              points[i*cols +j].y = j;
-              points[i*cols +j].flag = true;
-              points[i*cols +j].min_walk = -1;
-            }
-          else
-            {
-              points[i*cols +j].x = i;
-              points[i*cols +j].y = j;
-              points[i*cols +j].flag = false;
-              points[i*cols +j].min_walk = -1;
+              maxval[i][j] = max(maxval[i][j], max(maxval[k][j - 1]* score[i], minval[k][j - 1] * score[i]));
+              minval[i][j] = min(minval[i][j], min(maxval[k][j - 1]* score[i], minval[k][j - 1] * score[i]));
             }
         }
     }
-  cin>>in_str;
-  begin->x = atoi(in_str.c_str());
-  cin>>in_str;
-  begin->y = atoi(in_str.c_str());
-  cin>>in_str;
-  points[begin->x * cols + begin->y].min_walk = 0;
-  need_to_walk.push(points[begin->x * cols + begin->y]);
 
-  walk_num = atoi(in_str.c_str());
-  walks = new WALKS[walk_num];
-
-  for (i = 0; i< walk_num; i++)
+  for (i = 0; i < nums; i++)
     {
-      cin>>in_str;
-      walks[i].x = atoi(in_str.c_str());
-      cin>>in_str;
-      walks[i].y = atoi(in_str.c_str());
+          max_value = max(max_value, max(maxval[i][kstu - 1], minval[i][kstu  - 1]));
     }
-  walk_all_point();
-  max_step = get_max_step();
-  cout<<max_step<<endl;
-  delete []points;
-  delete []walks;
-  delete begin;
-  return 0;
+  return max_value;
 }
