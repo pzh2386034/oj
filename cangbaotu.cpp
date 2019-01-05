@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <map>
 #include <string>
+#include <queue>
 
+#include <algorithm>
 using namespace std;
 
 int main()
@@ -10,6 +12,7 @@ int main()
   string in_str;
   size_t i, j;
   string moban;
+
   int flag = 0;
   cin>>in_str;
   moban = in_str;

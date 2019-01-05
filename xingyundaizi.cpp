@@ -1,7 +1,9 @@
 #include <iostream>
 #include <algorithm>
 #include <stdlib.h>
+#include <stdio.h>
 #include <queue>
+#include <stack>
 /***********************************************
  * @brief: 幸运袋子
  * @author: pzh2467908@163.com
@@ -16,6 +18,8 @@ ques slove idea:通过递归，构造全排列搜索，剪枝
 using namespace std;
 int balls = 0;
 int num[1001];
+queue<int> que;
+stack<int> stacks;
 int cmp(const void * a, const void *b)
 {
   return *(int *)a - *(int *)b;
@@ -51,6 +55,10 @@ int main()
     {
       cin>>num[i];
     }
+  string str;
+  queue<char> quechar;
+
+
   qsort(num,balls,sizeof(int),cmp);
   cout<<deep_search(0, 0, 1);
   return 0;
